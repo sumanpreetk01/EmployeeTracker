@@ -59,7 +59,7 @@ const addEmplQuestions = (roleOptions, managerOptions)=>[{
     choices: managerOptions
 }]
 
-const updateEmplQuestions = (employeeOptions,roleOptions)[{
+const updateEmplQuestions = (employeeOptions,roleOptions)=>[{
     type:'list',
     name:'updatedEmployeeName',
     message:`Which employee's role do you want to update?`,
@@ -71,7 +71,10 @@ const updateEmplQuestions = (employeeOptions,roleOptions)[{
     type:'list',
     name:'updatedEmployeeRole',
     message:`Which role do you want to assign the selected employee?`,
-    choices:roleOptions
+    choices:roleOptions.map((role) => ({
+        name: role.title,
+        value: role.id,
+      })),
 }]
 
 
@@ -170,10 +173,29 @@ async function addEmployee() {
 async function updateEmployeeRole(){
     try {
         const [employeeRows,_] = await db.promise().query(`SELECT * FROM employee`);
+        const [roleRows,__] = await db.promise().query(`SELECT * FROM role`);
 
+        const employeeOptions = employeeRows.map((employee)=>({
+            id:employee.id,
+            first_name: employee.first_name,
+            last_name: employee.last_name,
+        }));
 
+        const roleOptions = roleRows.map((role)=>({
+            id:role.id,
+            title:role.title,
+        }))
+       
+        const updateQuestions = updateEmplQuestions(employeeOptions,roleOptions);
+        const {updatedEmployeeName, updatedEmployeeRole} = await inquirer.prompt(updateQuestions);
+
+        const selectedEmployee = employeeOptions.find((employee) => `${employee.first_name} ${employee.last_name}` === updatedEmployeeName);
+
+        await db.promise().query(`UPDATE employee SET role_id=? WHERE id=?`,[updatedEmployeeRole, selectedEmployee.id]);
+        console.log('Employee role updated successfully!');
+        viewAllEmployees();
     } catch (error) {
-        
+        console.log(error)
     }
 }
 
