@@ -1,7 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 require('dotenv').config();
-const {questions,addDeptQuestions,addRoleQuestions,addEmplQuestions,updateEmplQuestions} = require('./utils/questions')
+const {questions,addDeptQuestions,addRoleQuestions,addEmplQuestions,updateEmplQuestions} = require('./utils/questions.js')
 
 
 const db = mysql.createConnection(
@@ -131,9 +131,9 @@ async function addRole(){
     try {
         const [departmentRows, _] = await db.promise().query("Select * FROM department")
         var roleQuestions = addRoleQuestions(departmentRows)
-        const answers = await inquirer.prompt(roleQuestions)
-        console.log(answers)
-        await db.promise().query(`INSERT INTO role(title,salary,department_id) VALUES(?,?,?)`,[answers.roleName,answers.salaryAmount,answers.newRoleDept])
+        const response = await inquirer.prompt(roleQuestions)
+        console.log(response)
+        await db.promise().query(`INSERT INTO role(title,salary,department_id) VALUES(?,?,?)`,[response.roleName,response.salaryAmount,response.newRoleDept])
         viewAllRoles()
     } catch (error) {
         console.log(error)
@@ -142,8 +142,9 @@ async function addRole(){
 
 async function addDepartment(){
     try {
+        const [departmentRows, _] = await db.promise().query("Select * FROM department")
         const response = await inquirer.prompt(addDeptQuestions)
-        await db.query(`INSERT INTO department(name) VALUES(?)`, [response.deptName]);
+        await db.promise().query(`INSERT INTO department(name) VALUES(?)`, [response.deptName]);
         console.log('Department added successfully!')
         console.table(response);
         viewAllDepartments()
@@ -164,3 +165,4 @@ async function viewAllRoles(){
 };
 
 init()
+

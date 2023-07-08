@@ -5,11 +5,11 @@ const questions = [{
     choices: ['View all employees', 'Add employee', 'Update employee role', 'View all roles', 'Add role', 'View all departments','Add department']
 }]
 
-const addDeptQuestions = ({
+const addDeptQuestions = [{
     type:'input',
     name:'deptName',
     message:'What is the name of the department?'
-})
+}]
 
 const addRoleQuestions = (departmentOptions)=>[{
     type:'input',
@@ -74,3 +74,4 @@ const updateEmplQuestions = (employeeOptions,roleOptions)=>[{
 }]
 
 module.exports = {questions,addDeptQuestions,addRoleQuestions,addEmplQuestions,updateEmplQuestions}
+
