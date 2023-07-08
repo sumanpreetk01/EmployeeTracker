@@ -1,81 +1,7 @@
 const inquirer = require('inquirer');
 const mysql = require('mysql2');
 require('dotenv').config();
-
-const questions = [{
-    type: 'list',
-    name: 'selection',
-    message: 'What would you like to do?',
-    choices: ['View all employees', 'Add employee', 'Update employee role', 'View all roles', 'Add role', 'View all departments','Add department']
-}]
-
-const addDeptQuestions = ({
-    type:'input',
-    name:'deptName',
-    message:'What is the name of the department?'
-})
-
-const addRoleQuestions = (departmentOptions)=>[{
-    type:'input',
-    name:'roleName',
-    message:'What is the name of the role?'
-},{
-    type:'input',
-    name: 'salaryAmount',
-    message:'What is the salary of the role?'
-},{
-    type:'list',
-    name:'newRoleDept',
-    message: 'Which department does the role belong to?',
-    choices: departmentOptions.map((department)=>({
-        name:department.name,
-        value:department.id
-    }))
-}]
-
-const addEmplQuestions = (roleOptions, managerOptions)=>[{
-    type: 'input',
-    name: 'newFirstName',
-    message:`What is the employee's first name?`
-},
-{
-    type: 'input',
-    name: 'newLastName',
-    message:`What is the employee's last name?`
-},
-{
-    type: 'list',
-    name: 'newRole',
-    message:`What is the employee's role?`,
-    choices:roleOptions.map((role)=>({
-        name:role.title,
-        value:role.id
-    }))
-},
-{
-    type: 'list',
-    name: 'newManager',
-    message:`Who is the employee's manager?`,
-    choices: managerOptions
-}]
-
-const updateEmplQuestions = (employeeOptions,roleOptions)=>[{
-    type:'list',
-    name:'updatedEmployeeName',
-    message:`Which employee's role do you want to update?`,
-    choices:employeeOptions.map((employee)=>({
-        name:`${employee.first_name} ${employee.last_name}`
-    }))
-},
-{
-    type:'list',
-    name:'updatedEmployeeRole',
-    message:`Which role do you want to assign the selected employee?`,
-    choices:roleOptions.map((role) => ({
-        name: role.title,
-        value: role.id,
-      })),
-}]
+const {questions,addDeptQuestions,addRoleQuestions,addEmplQuestions,updateEmplQuestions} = require('./utils/questions')
 
 
 const db = mysql.createConnection(
@@ -125,6 +51,7 @@ async function viewAllDepartments(){
     try {
        const query = await db.promise().query(`SELECT * FROM department`);
         console.table(query[0])
+        init()
     } catch (error) {
         console.log(error)
     }
@@ -135,7 +62,8 @@ async function viewAllEmployees(){
        const query = await db.promise().query(`SELECT emp.id, CONCAT(emp.first_name, " ", emp.last_name) AS employee_name, role.title AS job_title, role.salary AS salary, department.name AS department, IFNULL(CONCAT(mans.first_name, " ", mans.last_name), "No Manager") AS manager
         FROM employee emp
         LEFT JOIN employee mans ON emp.manager_id = mans.id JOIN role ON emp.role_id = role.id JOIN department ON role.department_id = department.id`);
-        console.table(query[0])
+        console.table(query[0]);
+        init()
     } catch (error) {
         console.log(error)
     }
@@ -228,7 +156,8 @@ async function addDepartment(){
 async function viewAllRoles(){
     try {
          const query = await db.promise().query(`SELECT role.id, title, name AS department, salary FROM role JOIN department ON role.department_id = department.id`);
-         console.table(query)
+         console.table(query[0])
+         init()
     } catch (error) {
         console.error(error)
     }
